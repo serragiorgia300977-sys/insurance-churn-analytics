@@ -32,3 +32,7 @@ L'intera pipeline è stata sviluppata sfruttando le potenzialità moderne di **M
 
 ## 🖼️ Anteprima delle Dashboard
 *(Qui sotto puoi inserire gli screenshot delle tue pagine Power BI)*
+![Dashboard 1](./Screenshot_2-10-2026_173051_app.fabric.microsoft.com.jpeg)
+![Dashboard 2](./Screenshot_2-10-2026_173110_app.fabric.microsoft.com.jpeg)
+![Dashboard 3](./Screenshot_2-10-2026_173128_app.fabric.microsoft.com.jpeg)
+![Dashboard 4](./Screenshot_2-10-2026_173141_app.fabric.microsoft.com.jpeg)
