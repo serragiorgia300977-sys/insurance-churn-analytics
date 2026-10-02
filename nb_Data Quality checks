@@ -1,0 +1,17 @@
+# Importa le funzioni necessarie di PySpark / Import required PySpark functions
+from pyspark.sql.functions import col
+
+# 1. Carica i dati dalla tua tabella esistente / Load data from your existing table
+df_raw = spark.sql("SELECT * FROM gold_insurance_renewals")
+
+# 2. Applica i controlli di Data Quality adattati ai campi reali / Apply Data Quality checks adapted to actual fields
+df_clean = df_raw.filter(
+    (col("Premium_Amount") > 0) & 
+    (col("Price_Increase_Pct") >= 0) & 
+    (col("Start_Date").isNotNull()) & 
+    (col("Client_ID").isNotNull()) & 
+    (col("Policy_ID").isNotNull())
+)
+
+# 3. Mostra un'anteprima dei dati puliti / Show preview of cleaned data
+display(df_clean.limit(10))
