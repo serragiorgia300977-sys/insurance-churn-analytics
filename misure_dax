@@ -1,0 +1,31 @@
+# 🧮 Principali Misure DAX - Insurance Churn Analytics
+
+Qui di seguito sono elencate alcune delle misure DAX chiave sviluppate per il modello semantico in Power BI, volte a calcolare il rischio e l'impatto economico.
+
+## 1. Churn Rate (%)
+Calcola la percentuale di clienti persi rispetto al totale del portafoglio polizze.
+```dax
+Churn Rate % = 
+DIVIDE(
+    CALCULATE(DISTINCTCOUNT(Policies[ClientID]), Policies[Status] = "Churned"),
+    DISTINCTCOUNT(Policies[ClientID]),
+    0
+)
+
+## 2. Revenue at Risk = 
+CALCULATE(
+    SUM(Policies[PremiumAmount]),
+    Policies[RiskScore] > 75,
+    Policies[Status] = "Active"
+)
+
+## 3. Average Premium
+Average Premium = AVERAGE(gold_insurance_renewals[Premium_Amount])
+
+## 4. Avg Price Increase %
+Avg Price Increase % = AVERAGE(gold_insurance_renewals[Price_Increase_Pct])
+
+## 5. Avg_Risk_Score
+Avg_Risk_Score = AVERAGE(gold_insurance_renewals[Risk_Score_Index])
+## 6. Total Policies 
+Total Policies = COUNT('gold_insurance_renewals'[Policy_ID])
