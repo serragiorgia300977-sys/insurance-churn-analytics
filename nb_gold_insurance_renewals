@@ -1,0 +1,25 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, lit, rand
+
+spark = SparkSession.builder.getOrCreate()
+
+# 1. Leggiamo dal Silver Layer
+df_silver = spark.read.table("silver_insurance_cleaned")
+
+# 2. Aggiungiamo la colonna per l'agente di vendita (per la RLS)
+df_gold = df_silver.withColumn(
+    "Sales_Agent_Email",
+    when(rand() < 0.5, lit("agente1@agic.it"))
+    .otherwise(lit("agente2@agic.it"))
+)
+
+# 3. Scrittura con mergeSchema abilitato
+gold_table_name = "gold_insurance_renewals"
+df_gold.write \
+    .format("delta") \
+    .mode("overwrite") \
+    .option("mergeSchema", "true") \
+    .saveAsTable(gold_table_name)
+
+print(f"Tabella Gold '{gold_table_name}' aggiornata con successo e schema allineato!")
+display(df_gold.limit(5))
