@@ -1,0 +1,40 @@
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, when, round, lit
+
+# Inizializza Spark Session
+spark = SparkSession.builder.getOrCreate()
+
+# 1. Lettura dei dati grezzi dal Bronze Layer
+df_bronze = spark.read.table("bronze_insurance_raw")
+
+# 2. Pulizia e trasformazione (Data Cleansing & Normalization)
+df_silver = df_bronze \
+    .withColumn("Start_Date", col("Start_Date").cast("date")) \
+    .withColumn("Expiry_Date", col("Expiry_Date").cast("date")) \
+    .withColumn("Premium_Amount", col("Premium_Amount").cast("double")) \
+    .withColumn("Price_Increase_Pct", col("Price_Increase_Pct").cast("double")) \
+    .withColumn("Claims_Count_Last_Year", col("Claims_Count_Last_Year").cast("int")) \
+    .withColumn("Support_Tickets", col("Support_Tickets").cast("int")) \
+    .withColumn("Payment_Delays", col("Payment_Delays").cast("int")) \
+    .withColumn("Churn", col("Churn").cast("int"))
+
+# 3. Feature Engineering avanzata (KPI mirati per il business e il machine learning) Calcola un indice ponderato di rischio di abbandono usando una formula matematica in Spark: 
+#moltiplica la percentuale di aumento del prezzo per $2.0$, i sinistri dell'ultimo anno per $1.5$ e i ritardi nei pagamenti per $1.0$.  
+df_silver_engineered = df_silver \
+    .withColumn(
+        "Risk_Score_Index", 
+        round((col("Price_Increase_Pct") * 2.0) + (col("Claims_Count_Last_Year") * 1.5) + (col("Payment_Delays") * 1.0), 2)
+    ) \
+    .withColumn(
+        "Client_Segment",
+        when(col("Premium_Amount") > 1200, "High-Value")
+        .when(col("Premium_Amount") > 700, "Medium-Value")
+        .otherwise("Standard")
+    )
+
+# 4. Salvataggio nel Layer Silver del Lakehouse in formato Delta Table
+silver_table_name = "silver_insurance_cleaned"
+df_silver_engineered.write.format("delta").mode("overwrite").saveAsTable(silver_table_name)
+
+print(f"Tabella Silver '{silver_table_name}' creata con successo! Record elaborati: {df_silver_engineered.count()}")
+display(df_silver_engineered.limit(5)) # limite 5 l'ho messo per valocizzare il browser, e faccio subito un controllo se la formula è scritta bene senza i 3000 record.
